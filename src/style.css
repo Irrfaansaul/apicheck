@@ -1,105 +1,161 @@
-body {
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+:root {
+  --primary-color: #00ff00;
+  --secondary-color: #008000;
+  --background-color: #000000;
+  --text-color: #ffffff;
+  --input-bg: #1a1a1a;
+  --input-border: #333333;
+  --button-bg: #00ff00;
+  --button-hover-bg: #00cc00;
+}
+
+body, html {
   margin: 0;
-  font-family: Arial, sans-serif;
+  padding: 0;
+  font-family: 'Roboto Mono', monospace;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
 }
 
 .container {
+  width: 90%;
+  height: 90%;
   display: flex;
-  height: 100vh;
-  margin: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: rgba(26, 26, 26, 0.8);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
 }
 
 #received-text-container {
-  flex: 6;
+  flex-grow: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  padding: 20px;
+  border-radius: 10px;
   overflow-y: auto;
-  padding: 1rem;
-  background-color: #ebebeb;
-  border: 1px solid #646cff;
-  border-radius: 8px;
-  margin-right: 2rem;
+  margin-bottom: 20px;
+  font-size: 16px;
+  line-height: 1.6;
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
 }
 
 .controls {
-  flex: 2;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
+  gap: 15px;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
-  width: 100%;
+  gap: 5px;
 }
 
-.input-group input,
-.input-group textarea {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #ebebeb;
-  margin-bottom: 0.5rem;
-  transition: border-color 0.25s;
+label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-transform: uppercase;
 }
 
-.input-group input:hover,
-.input-group textarea:hover {
-  border-color: #646cff;
+input, textarea, select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-color);
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-family: 'Roboto Mono', monospace;
 }
 
-.input-group input:focus,
-.input-group textarea:focus,
-.input-group input:focus-visible,
-.input-group textarea:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .button-group {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.toggle-group {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.toggle-group label {
-  margin-right: 0.5rem;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #444df5;
-  color: white;
+  background-color: var(--button-bg);
+  color: var(--background-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 button:hover {
-  border-color: #646cff;
+  background-color: var(--button-hover-bg);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-button:disabled,
-button[disabled] {
-  border: 1px solid #999999;
-  background-color: #cccccc;
-  color: #666666;
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--input-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--button-hover-bg);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+}
+
+#start-recording {
+  animation: pulse 2s infinite;
+}
+
+#stop-recording {
+  background-color: #ff0000;
+}
+
+#clear-all {
+  background-color: #ffa500;
 }

@@ -1,14 +1,37 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
 import { Player } from "./player.ts";
 import { Recorder } from "./recorder.ts";
 import "./style.css";
 import { LowLevelRTClient, SessionUpdateMessage, Voice } from "rt-client";
 
+
+
+
 let realtimeStreaming: LowLevelRTClient;
 let audioRecorder: Recorder;
 let audioPlayer: Player;
+let latencyStartTime: number | null = null;
+
+const DEFAULT_ENDPOINT = "https://jarvi-m45ecr24-eastus2.cognitiveservices.azure.com/openai/realtime?api-version=2024-10-01-preview&deployment=gpt-4o-realtime-preview";
+const DEFAULT_API_KEY = "3EPC6QLDw0DgCLbgf0n1255FZTldYiklBL3EnRT4EyFoC3IILCJ9JQQJ99ALACHYHv6XJ3w3AAAAACOG5Vc1";
+const DEFAULT_DEPLOYMENT = "gpt-4o-realtime-preview";
+
+
+const latencyDisplay = document.createElement('div');
+latencyDisplay.id = 'latency-display';
+latencyDisplay.textContent = 'Latency: -- ms';
+latencyDisplay.style.fontWeight = 'bold';
+latencyDisplay.style.marginBottom = '1rem';
+latencyDisplay.style.color = '#444df5';
+
+// Automatically populate form fields with default values
+function populateDefaultFields() {
+  formEndpointField.value = DEFAULT_ENDPOINT;
+  formApiKeyField.value = DEFAULT_API_KEY;
+  formDeploymentOrModelField.value = DEFAULT_DEPLOYMENT;
+  
+  // Since it's an Azure endpoint, check the Azure toggle
+  formAzureToggle.checked = true;
+}
 
 async function start_realtime(endpoint: string, apiKey: string, deploymentOrModel: string) {
   if (isAzureOpenAI()) {
@@ -26,12 +49,12 @@ async function start_realtime(endpoint: string, apiKey: string, deploymentOrMode
     setFormInputState(InputState.ReadyToStart);
     return;
   }
-  console.log("sent");
+  
+  console.log("Configuration sent successfully");
   await Promise.all([resetAudio(true), handleRealtimeMessages()]);
 }
 
-function createConfigMessage() : SessionUpdateMessage {
-
+function createConfigMessage(): SessionUpdateMessage {
   let configMessage : SessionUpdateMessage = {
     type: "session.update",
     session: {
@@ -64,7 +87,6 @@ function createConfigMessage() : SessionUpdateMessage {
 async function handleRealtimeMessages() {
   for await (const message of realtimeStreaming.messages()) {
     let consoleLog = "" + message.type;
-
     switch (message.type) {
       case "session.created":
         setFormInputState(InputState.ReadyToStop);
@@ -72,15 +94,24 @@ async function handleRealtimeMessages() {
         makeNewTextBlock();
         break;
       case "response.audio_transcript.delta":
+        if (latencyStartTime !== null) {
+          const latency = performance.now() - latencyStartTime;
+          updateLatencyDisplay(latency);
+          latencyStartTime = null;
+        }
         appendToTextBlock(message.delta);
         break;
       case "response.audio.delta":
+        if (latencyStartTime !== null) {
+          const latency = performance.now() - latencyStartTime;
+          updateLatencyDisplay(latency);
+          latencyStartTime = null;
+        }
         const binary = atob(message.delta);
         const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
         const pcmData = new Int16Array(bytes.buffer);
         audioPlayer.play(pcmData);
         break;
-
       case "input_audio_buffer.speech_started":
         makeNewTextBlock("<< Speech Started >>");
         let textElements = formReceivedTextContainer.children;
@@ -90,13 +121,14 @@ async function handleRealtimeMessages() {
         break;
       case "conversation.item.input_audio_transcription.completed":
         latestInputSpeechBlock.textContent += " User: " + message.transcript;
+        latencyStartTime = performance.now();
         break;
       case "response.done":
         formReceivedTextContainer.appendChild(document.createElement("hr"));
         break;
       default:
         consoleLog = JSON.stringify(message, null, 2);
-        break
+        break;
     }
     if (consoleLog) {
       console.log(consoleLog);
@@ -104,6 +136,24 @@ async function handleRealtimeMessages() {
   }
   resetAudio(false);
 }
+
+function updateLatencyDisplay(latency: number) {
+  latencyDisplay.textContent = `Latency: ${latency.toFixed(2)} ms`;
+}
+
+// ... (rest of the code remains unchanged)
+
+// Add this at the end of the file
+const controlsDiv = document.querySelector('.controls');
+if (controlsDiv) {
+  controlsDiv.insertBefore(latencyDisplay, controlsDiv.firstChild);
+}
+
+
+
+
+
+
 
 /**
  * Basic audio handling
@@ -234,33 +284,41 @@ function appendToTextBlock(text: string) {
 
 formStartButton.addEventListener("click", async () => {
   setFormInputState(InputState.Working);
-
-  const endpoint = formEndpointField.value.trim();
-  const key = formApiKeyField.value.trim();
-  const deploymentOrModel = formDeploymentOrModelField.value.trim();
+  
+  const endpoint = formEndpointField.value.trim() || DEFAULT_ENDPOINT;
+  const key = formApiKeyField.value.trim() || DEFAULT_API_KEY;
+  const deploymentOrModel = formDeploymentOrModelField.value.trim() || DEFAULT_DEPLOYMENT;
 
   if (isAzureOpenAI() && !endpoint && !deploymentOrModel) {
-    alert("Endpoint and Deployment are required for Azure OpenAI");
-    return;
+      alert("Endpoint and Deployment are required for Azure OpenAI");
+      return;
   }
-
+  
   if (!isAzureOpenAI() && !deploymentOrModel) {
-    alert("Model is required for OpenAI");
-    return;
+      alert("Model is required for OpenAI");
+      return;
   }
-
+  
   if (!key) {
-    alert("API Key is required");
-    return;
+      alert("API Key is required");
+      return;
   }
 
   try {
-    start_realtime(endpoint, key, deploymentOrModel);
+      start_realtime(endpoint, key, deploymentOrModel);
   } catch (error) {
-    console.log(error);
-    setFormInputState(InputState.ReadyToStart);
+      console.log(error);
+      setFormInputState(InputState.ReadyToStart);
   }
 });
+
+// Populate default fields when the page loads
+document.addEventListener('DOMContentLoaded', populateDefaultFields);
+
+
+
+// Populate default fields when the page loads
+document.addEventListener('DOMContentLoaded', populateDefaultFields);
 
 formStopButton.addEventListener("click", async () => {
   setFormInputState(InputState.Working);
@@ -277,3 +335,4 @@ formEndpointField.addEventListener('change', async () => {
   guessIfIsAzureOpenAI();
 });
 guessIfIsAzureOpenAI();
+
