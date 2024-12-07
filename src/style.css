@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
   --primary-color: #00ff00;
@@ -9,12 +9,13 @@
   --input-border: #333333;
   --button-bg: #00ff00;
   --button-hover-bg: #00cc00;
+  --error-color: #ff4136;
 }
 
 body, html {
   margin: 0;
   padding: 0;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   background-color: var(--background-color);
   color: var(--text-color);
   height: 100vh;
@@ -23,48 +24,48 @@ body, html {
 }
 
 #app {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
   width: 100vw;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
-  width: 90%;
-  height: 90%;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background-color: rgba(26, 26, 26, 0.8);
-  border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 #received-text-container {
-  flex-grow: 1;
+  height: 30vh;
+  overflow-y: auto;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   padding: 20px;
-  border-radius: 10px;
-  overflow-y: auto;
+  border-radius: 5px;
   margin-bottom: 20px;
   font-size: 16px;
   line-height: 1.6;
   box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+  scroll-behavior: smooth;
 }
 
 .controls {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-top: 20px;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 label {
@@ -78,16 +79,17 @@ input, textarea, select {
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   color: var(--text-color);
-  padding: 10px;
+  padding: 12px;
   border-radius: 5px;
   font-size: 16px;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s ease;
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
 textarea {
@@ -98,14 +100,15 @@ textarea {
 .button-group {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 button {
   background-color: var(--button-bg);
   color: var(--background-color);
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 5px;
   font-size: 16px;
   font-weight: 700;
@@ -113,16 +116,32 @@ button {
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
+  flex: 1;
+  min-width: 120px;
 }
 
 button:hover {
   background-color: var(--button-hover-bg);
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+  transform: translateY(-2px);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+}
+
+#start-recording {
+  background-color: var(--button-bg);
+}
+
+#stop-recording {
+  background-color: var(--error-color);
+}
+
+#clear-all {
+  background-color: var(--secondary-color);
 }
 
 ::-webkit-scrollbar {
@@ -148,14 +167,55 @@ button:disabled {
   100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
 }
 
-#start-recording {
+#start-recording:not(:disabled) {
   animation: pulse 2s infinite;
 }
 
-#stop-recording {
-  background-color: #ff0000;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-#clear-all {
-  background-color: #ffa500;
+.input-group, button {
+  animation: fadeIn 0.5s ease-out;
+}
+
+#azure-toggle,
+#api-key,
+#deployment-or-model {
+  visibility: hidden;
+  position: absolute;
+}
+
+#endpoint {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  #received-text-container {
+    font-size: 14px;
+  }
+
+  input, textarea, select, button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1000px;
+  }
 }
