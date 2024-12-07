@@ -330,7 +330,7 @@ Remember: With Harry AI, the future isn't just fast - it's instantaneous. 🌟
   private setFormState(state: 'working' | 'start' | 'stop') {
     const isStartState = state === 'start';
     const isStopState = state === 'stop';
-    const isWorkingState = state === 'working';
+ 
 
     this.UI.endpointField.disabled = !isStartState;
     this.UI.apiKeyField.disabled = !isStartState;
