@@ -1,7 +1,7 @@
 import { Player } from "./player.ts";
 import { Recorder } from "./recorder.ts";
 import "./style.css";
-import { LowLevelRTClient, SessionUpdateMessage, Voice } from "rt-client";
+import { LowLevelRTClient, SessionUpdateMessage } from "rt-client";
 
 class RealtimeChat {
   private realtimeStreaming: LowLevelRTClient | null = null;
