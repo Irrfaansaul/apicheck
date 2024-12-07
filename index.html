@@ -1,72 +1,315 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Realtime API with openai-node SDK</title>
-  <style>
-    #azure-toggle,
-    #api-key,
-    #deployment-or-model {
-      visibility: hidden;
-      position: absolute;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harry AI - World's Fastest Conversational AI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap');
+
+        :root {
+            --primary-color: #00ff88;
+            --secondary-color: #00ccaa;
+            --background-color: #0a0a0a;
+            --text-color: #ffffff;
+            --accent-color: #00ffcc;
+            --glow-color: rgba(0, 255, 136, 0.3);
+            --header-height: 4.5rem;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+        }
+
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 1px solid var(--accent-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 2px;
+            background: var(--accent-color);
+            animation: scan 4s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-50%) translateY(0); }
+            100% { transform: translateX(0%) translateY(0); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 8px var(--glow-color);
+            animation: pulse 2s infinite;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - var(--header-height));
+        }
+
+        #received-text-container {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            overflow-y: auto;
+            box-shadow: 0 0 15px var(--glow-color);
+            position: relative;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        #received-text-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #received-text-container::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        .message {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-left: 2px solid var(--accent-color);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent-color);
+            display: grid;
+            gap: 1rem;
+            max-height: 40vh;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            min-width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: buttonShine 3s infinite;
+        }
+
+        @keyframes buttonShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--glow-color);
+        }
+
+        textarea {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--accent-color);
+            color: var(--text-color);
+            font-family: inherit;
+            padding: 0.8rem;
+            border-radius: 6px;
+            resize: none;
+            height: 80px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+
+        .hidden-inputs {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0.5rem; }
+            .controls { padding: 0.8rem; }
+            button {
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+                min-width: 100px;
+            }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
 </head>
 <body>
-  <div id="app">
-    <form>
-      <div class="container">
-        <div id="received-text-container"></div>
-        <div class="controls">
-          <div class="input-group">
-            <label for="endpoint"></label>
-            <input id="endpoint" type="text" placeholder="Enter resource/endpoint URL" style="display: none;" />
-            <div class="toggle-group">
-              <label for="azure-toggle"></label>
-              <input id="azure-toggle" />
+    <div id="app">
+        <header>
+            <h1>HARRY AI</h1>
+            <div class="subtitle">World's Fastest Conversational AI</div>
+        </header>
+        <form>
+            <div class="container">
+                <div id="received-text-container" role="log" aria-live="polite">
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="controls">
+                    <div class="hidden-inputs">
+                        <input id="endpoint" type="text" />
+                        <input id="azure-toggle" />
+                        <input id="api-key" type="password" />
+                        <input id="deployment-or-model" type="text" />
+                    </div>
+                    <div class="button-group">
+                        <button id="start-recording" type="button">Start Conversation</button>
+                        <button id="stop-recording" type="button" disabled>End Conversation</button>
+                        <button id="clear-all" type="button">Reset</button>
+                    </div>
+                    <textarea id="session-instructions" 
+                             placeholder="Customize Harry AI's behavior with specific instructions..."
+                             rows="3"></textarea>
+                </div>
             </div>
-            <label for="api-key"></label>
-            <input id="api-key" type="password" placeholder="Enter API key" />
-            <label for="deployment-or-model"></label>
-            <input id="deployment-or-model" type="text" placeholder="Enter deployment/model" />
-          </div>
-          <div class="input-group">
-            <div class="button-group">
-              <button id="start-recording" type="button">Record</button>
-              <button id="stop-recording" type="button" disabled="true">Stop</button>
-            </div>
-            <div class="input-group">
-              <label for="session-instructions">System Message</label>
-              <textarea id="session-instructions" placeholder="Optional instructions for the session, e.g. 'You talk like a pirate.'" rows="4"></textarea>
-            </div>
-            <div class="input-group">
-              <label for="temperature">Temperature</label>
-              <input id="temperature" type="number" min="0.6" max="1.2" step="0.05" placeholder="0.6-1.2 (default 0.8)" />
-            </div>
-            <div class="input-group">
-              <label for="voice">Voice</label>
-              <select id="voice">
-                <option></option>
-                <option>alloy</option>
-                <option>ash</option>
-                <option>ballad</option>
-                <option>coral</option>
-                <option>echo</option>
-                <option>sage</option>
-                <option>shimmer</option>
-                <option>verse</option>
-              </select>
-            </div>
-            <div class="button-group">
-              <button id="clear-all" type="button">Clear all</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </form>
-  </div>
-  <script type="module" src="/src/main.ts"></script>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('received-text-container');
+            
+            // Auto-scroll functionality
+            if (container) {
+                const observer = new MutationObserver(() => {
+                    container.scrollTop = container.scrollHeight;
+                });
+                observer.observe(container, { childList: true, subtree: true });
+            }
+
+            // Dynamic message styling
+            function styleMessage(text) {
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.textContent = text;
+                return div;
+            }
+
+            // Button animation effects
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    button.style.transform = 'translateY(-2px)';
+                });
+                button.addEventListener('mouseleave', () => {
+                    button.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Textarea dynamic height
+            const textarea = document.getElementById('session-instructions');
+            textarea.addEventListener('input', () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+            });
+        });
+    </script>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
